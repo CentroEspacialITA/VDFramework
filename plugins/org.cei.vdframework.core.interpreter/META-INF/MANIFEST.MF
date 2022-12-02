@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Simulator
+Bundle-SymbolicName: org.cei.vdframework.core.interpreter
+Bundle-Version: 1.0.0.qualifier
+Automatic-Module-Name: org.cei.vdframework.core.simulator
+Bundle-RequiredExecutionEnvironment: JavaSE-16
+Import-Package: org.eclipse.sirius.business.api.session;version="7.0.0",
+ org.polarsys.capella.core.data.capellamodeller
