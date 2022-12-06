@@ -19,6 +19,9 @@ public class MainHandler extends AbstractHandler {
 				window.getShell(),
 				"org.cei.vdframework",
 				"Hello, Eclipse world");
+		
+		StateMachineInterpreter smi = new StateMachineInterpreter();
+		
 		return null;
 		
 		

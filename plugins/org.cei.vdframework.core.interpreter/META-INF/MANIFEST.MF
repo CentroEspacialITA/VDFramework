@@ -7,3 +7,6 @@ Automatic-Module-Name: org.cei.vdframework.core.simulator
 Bundle-RequiredExecutionEnvironment: JavaSE-16
 Import-Package: org.eclipse.sirius.business.api.session;version="7.0.0",
  org.polarsys.capella.core.data.capellamodeller
+Export-Package: org.cei.vdframework.core.interpreter
+Require-Bundle: org.polarsys.capella.core.model.handler,
+ org.eclipse.ui.workbench

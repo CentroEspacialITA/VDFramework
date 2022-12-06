@@ -15,6 +15,7 @@
          <command
                categoryId="org.cei.vdframework.commands.category"
                id="org.cei.vdframework.commands.sampleCommand"
+               defaultHandler = "org.cei.vdframework.core.handlers.MainHandler"
                name="Sample Command">
          </command>
    </extension>
@@ -42,7 +43,7 @@
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            class="org.cei.vdframework.handlers.SampleHandler"
+            class="org.cei.vdframework.core.handlers.MainHandler"
             commandId="org.cei.vdframework.commands.sampleCommand">
       </handler>
    </extension>
