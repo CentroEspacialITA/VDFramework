@@ -50,7 +50,7 @@ public class StateMachineInterpreter {
 	});
 		for (StateMachine sm : stateMachines) {
 			java.lang.System.out.println(sm.getName());
-			
+		
 		}
 		
 	}
