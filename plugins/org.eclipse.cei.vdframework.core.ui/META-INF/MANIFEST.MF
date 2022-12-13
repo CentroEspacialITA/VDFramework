@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: VD UI
+Bundle-SymbolicName: org.eclipse.cei.vdframework.core.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.eclipse.cei.vdframework.core.ui.Activator
+Require-Bundle: javax.inject,
+ org.eclipse.osgi,
+ org.eclipse.jface,
+ org.eclipse.e4.ui.model.workbench,
+ org.eclipse.e4.ui.di,
+ org.eclipse.e4.ui.services,
+ org.eclipse.e4.core.di.annotations,
+ org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-16
+Automatic-Module-Name: org.eclipse.cei.vdframework.core.ui
+Import-Package: javax.annotation;version="1.2.0"
+Bundle-ActivationPolicy: lazy

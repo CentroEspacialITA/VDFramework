@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Input
-Bundle-SymbolicName: org.cei.vdframework.core.input
-Bundle-Version: 1.0.0.qualifier
-Automatic-Module-Name: org.cei.vdframework.core.input
-Bundle-RequiredExecutionEnvironment: JavaSE-16
