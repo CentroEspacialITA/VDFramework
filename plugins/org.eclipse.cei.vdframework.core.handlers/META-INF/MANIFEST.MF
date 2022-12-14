@@ -6,7 +6,9 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.eclipse.cei.vdframework.core.handlers.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.eclipse.sirius
+ org.eclipse.sirius,
+ org.polarsys.capella.core.sirius.analysis,
+ org.polarsys.capella.common.ui.toolkit
 Bundle-RequiredExecutionEnvironment: JavaSE-16
 Automatic-Module-Name: org.eclipse.cei.vdframework.core.handlers
 Bundle-ActivationPolicy: lazy
