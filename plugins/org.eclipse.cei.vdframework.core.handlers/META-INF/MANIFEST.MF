@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.ui,
  org.polarsys.capella.core.sirius.analysis,
  org.polarsys.capella.common.ui.toolkit,
  org.eclipse.cei.vdframework.core.util;bundle-version="1.0.0",
- org.polarsys.capella.core.sirius.ui
+ org.polarsys.capella.core.sirius.ui,
+ org.eclipse.cei.vdframework.core.kernel;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-16
 Automatic-Module-Name: org.eclipse.cei.vdframework.core.handlers
 Bundle-ActivationPolicy: lazy

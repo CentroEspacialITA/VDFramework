@@ -13,3 +13,5 @@ Automatic-Module-Name: org.eclipse.cei.vdframework.core.kernel
 Bundle-ActivationPolicy: lazy
 Import-Package: org.polarsys.capella.common.data.behavior,
  org.polarsys.capella.core.data.capellacore
+Export-Package: org.eclipse.cei.vdframework.core.kernel,
+ org.eclipse.cei.vdframework.core.kernel.klangfarbe
