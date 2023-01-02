@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Util
+Bundle-SymbolicName: org.eclipse.cei.vdframework.core.util
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.eclipse.cei.vdframework.core.util.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.emf.ecore,
+ org.polarsys.capella.core.data.gen,
+ org.polarsys.capella.core.model.helpers
+Bundle-RequiredExecutionEnvironment: JavaSE-16
+Automatic-Module-Name: org.eclipse.cei.vdframework.core.util
+Bundle-ActivationPolicy: lazy
+Export-Package: org.eclipse.cei.vdframework.core.util
