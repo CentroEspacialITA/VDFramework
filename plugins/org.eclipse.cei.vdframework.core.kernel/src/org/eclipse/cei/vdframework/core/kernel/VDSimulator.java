@@ -65,10 +65,6 @@ public class VDSimulator {
 		EList<AbstractState> states = defaultRegion.getOwnedStates();
 	
 	}	
-		
-		
-
-	
 	
 	private void DFSParser(Region defaultRegion) throws StatechartException {
 		// Get the list containing root states.
@@ -76,7 +72,6 @@ public class VDSimulator {
 		Stack<State> dfsStack = new Stack<>();
 		Stack<State> parentStack = new Stack<>();
 		HashMap<State, Boolean> mapVisited = new HashMap<State, Boolean>();
-		State parentState;
 		
 		// Push the first root state that is a <State>		
 		for(AbstractState absState : rootStates) {
@@ -106,7 +101,11 @@ public class VDSimulator {
 			
 			if(mapVisited.get(s) == false || mapVisited.get(s) == null) {
 				// Now we visit this state.
+				
+			
 				if(s instanceof InitialPseudoState) {
+					// add the following block to a function
+					
 					 EList<Region> involvedRegions = s.getInvolverRegions();
 					 if(involvedRegions.size() > 1) {
 						 Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
@@ -123,15 +122,73 @@ public class VDSimulator {
 						 return;
 						 
 					 }
-					 // involvedStates.get(0).getName();
-					 
-					 //initialKFStates.put((InitialPseudoState) s, new PseudoState(
-					//		s.getName(), 
 					
-					 
-					 
+					 // Populate hash maps
+					 if(hierarchicalKFStates.get(involvedStates.get(0)) != null) {
+						 initialKFStates.put((InitialPseudoState)s, new PseudoState(
+								 s.getName(), hierarchicalKFStates.get(involvedStates.get(0)), PseudoState.pseudostate_start));
+					 }else if(concurrentKFStates.get(involvedStates.get(0)) != null) {
+						 initialKFStates.put((InitialPseudoState)s, new PseudoState(
+								 s.getName(), concurrentKFStates.get(involvedStates.get(0)), PseudoState.pseudostate_start));
+					 }
+					 else {
+						 // This PseudoInitialPoint doesn't have a parent?
+						 
+					 } 
 				}
-				
+				else if(s instanceof State) {
+					// Add warnings
+					EList<Region> involvedRegions = s.getInvolverRegions();
+					EList<AbstractState> involvedStates = involvedRegions.get(0).getInvolvedStates();
+					
+					boolean isConcurrent = s.getOwnedRegions().size() > 1 ? true : false;
+					if(isConcurrent) {
+						if(hierarchicalKFStates.get(involvedStates.get(0)) != null) {
+							 concurrentKFStates.put((State)s, new ConcurrentState(
+									 s.getName(), hierarchicalKFStates.get(involvedStates.get(0))));
+						 }else if(concurrentKFStates.get(involvedStates.get(0)) != null) {
+							 concurrentKFStates.put((State)s, new ConcurrentState(
+									 s.getName(), concurrentKFStates.get(involvedStates.get(0))));
+						 }
+						 else {
+							 // This PseudoInitialPoint doesn't have a parent?
+							 
+						 }
+					}		
+					boolean isHierarchical;
+					for(Region or : s.getOwnedRegions()) {
+						  isHierarchical = or.getOwnedStates().size() > 0 ? true : false;	
+						}
+					
+					if(isHierarchical) {
+						
+						
+						
+						
+						
+					}
+					
+					
+					
+					
+					
+						
+					
+					
+					// Populate hash maps
+					 if(hierarchicalKFStates.get(involvedStates.get(0)) != null) {
+						 initialKFStates.put((InitialPseudoState)s, new PseudoState(
+								 s.getName(), hierarchicalKFStates.get(involvedStates.get(0)), PseudoState.pseudostate_start));
+					 }else if(concurrentKFStates.get(involvedStates.get(0)) != null) {
+						 initialKFStates.put((InitialPseudoState)s, new PseudoState(
+								 s.getName(), concurrentKFStates.get(involvedStates.get(0)), PseudoState.pseudostate_start));
+					 }
+					 else {
+						 // This PseudoInitialPoint doesn't have a parent?
+						 
+					 } 
+					
+				}
 			
 				
 				mapVisited.put(s,  true);
@@ -141,13 +198,19 @@ public class VDSimulator {
 			EList<Region> sRegions = s.getOwnedRegions();
 			
 			// Treat each region as a 'state' for DFS
+
+			
 		    for(Region r : sRegions) {
 		    	EList<AbstractState> subStates = r.getOwnedStates();
+		    	if(subStates.size() == 0) {
+		    		
+		    	}
+		    	
+		    	
 		    	for(AbstractState absState : subStates) {
 		    		if(absState instanceof State && 
 		    				(mapVisited.get(absState) == false || mapVisited.get(absState) == null)) {
 		    				dfsStack.push((State)absState);
-		    				parentState = s;
 		    			}
 		    		}
 		    	}
