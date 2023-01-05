@@ -10,6 +10,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.window.Window;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.sirius.business.api.session.Session;
 import org.eclipse.sirius.business.api.session.SessionManager;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import java.util.Collection;
 import java.util.HashSet;
@@ -81,6 +83,9 @@ public class InitHandler extends AbstractHandler {
              VDSimulator.instantiate(result2);
             }catch(StatechartException se) {
             	se.printStackTrace();
+            	Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+   			 	MessageDialog.openError(shell, "[CEI-VD]", 
+   					 se.getMessage());
             	System.out.println(se.getMessage());
             	
             }
