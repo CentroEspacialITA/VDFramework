@@ -13,6 +13,8 @@ import org.eclipse.cei.vdframework.core.kernel.klangfarbe.HierarchicalState;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.PseudoState;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Statechart;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.StatechartException;
+import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Transition;
+
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -25,6 +27,7 @@ import org.polarsys.capella.core.data.capellacommon.Pseudostate;
 import org.polarsys.capella.core.data.capellacommon.Region;
 import org.polarsys.capella.core.data.capellacommon.State;
 import org.polarsys.capella.core.data.capellacommon.StateMachine;
+import org.polarsys.capella.core.data.capellacommon.StateTransition;
 
 public class VDSimulator {
 	
@@ -42,6 +45,7 @@ public class VDSimulator {
 		this.hierarchicalKFStates = new HashMap<State, HierarchicalState>();
 		this.stateKFStates = new HashMap<State, org.eclipse.cei.vdframework.core.kernel.klangfarbe.State>();
 		this.regionKFState = new HashMap<Region, HierarchicalState>();
+		this.transitionKF = new HashMap<StateTransition, Transition>();
 		initializeStatechart();
 	}
 	
@@ -176,10 +180,46 @@ public class VDSimulator {
 			
 			
 		    }
+			TransitionParser(defaultRegion);
 			kfChart.toString();
 		}
 		
-	private void DFSTransitionParser(Region defaultRegion) {
+	private void TransitionParser(Region defaultRegion) {
+		// Parse transitions now
+		// States/substates/regions are already parsed
+		
+		// Add all transitions exiting an initial node
+		initialKFStates.forEach(
+				(key,value) ->
+				{
+				 EList<StateTransition> outTransition = key.getOutgoing();	
+				 if(outTransition.size() > 1) {
+					 Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+					 MessageDialog.openError(shell, "[CEI-VD]", 
+							 "Initial Pseudo State contains more than one outgoing transitions.");
+					 return;
+				 }
+				 // Next AbstractState could be:
+				 // State, HierarchicalState, ConcurrentState, FinalState.
+				 if(outTransition.size()>0) {
+				 AbstractState target = outTransition.get(0).getTarget();
+				 Context targetKF = null;
+				 if(isConcurrent(target)) {
+					 targetKF = concurrentKFStates.get(target);
+					 
+				 }else if (isHierarchical(target)) {
+					 targetKF = hierarchicalKFStates.get(target);
+					 
+				 }else {
+					 transitionKF.put(outTransition.get(0), new Transition(value, stateKFStates.get(target)));
+					 
+				 }
+				 if(targetKF != null) {
+				 transitionKF.put(outTransition.get(0), new Transition(value, targetKF));
+				 }
+				 }
+				});			
+	
 		
 		
 		
@@ -258,6 +298,10 @@ public class VDSimulator {
 		return ownedRegions.size() > 1 ? true : false;
 	}
 	
+	private boolean isHierarchical(AbstractState s) {
+		return isParent(s);
+	}
+	
 	
 	
 	
@@ -273,7 +317,7 @@ public class VDSimulator {
 	private HashMap<State, ConcurrentState> concurrentKFStates;
 	private HashMap<State, org.eclipse.cei.vdframework.core.kernel.klangfarbe.State> stateKFStates;
 	private HashMap<Region, HierarchicalState> regionKFState;
-	
+	private HashMap<StateTransition, Transition> transitionKF;
 	// Singleton
 	private static VDSimulator INSTANCE;
 	// Klangfarbe Statechart
