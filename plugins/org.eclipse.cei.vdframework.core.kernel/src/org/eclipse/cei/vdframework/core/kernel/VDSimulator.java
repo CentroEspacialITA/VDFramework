@@ -219,8 +219,29 @@ public class VDSimulator {
 				 }
 				 }
 				});			
-	
-		
+		finalKFStates.forEach(
+				// Add all transitions entering a final node
+				(key,value) ->
+				{
+				 EList<StateTransition> inTransition = key.getIncoming();	
+				 for(StateTransition in : inTransition) {
+				 AbstractState source = in.getSource();
+				 Context sourceKF = null;
+				 if(isConcurrent(source)) {
+					 sourceKF = concurrentKFStates.get(source);
+					 
+				 }else if (isHierarchical(source)) {
+					 sourceKF = hierarchicalKFStates.get(source);
+					 
+				 }else {
+					 transitionKF.put(in, new Transition(stateKFStates.get(source), value));
+					 
+				 }
+				 if(sourceKF != null) {
+				 transitionKF.put(inTransition.get(0), new Transition(sourceKF,value));
+				 }
+				 }
+				});	
 		
 		
 	}
