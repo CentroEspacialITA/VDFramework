@@ -80,7 +80,9 @@ public class InitHandler extends AbstractHandler {
             try{
              VDSimulator.instantiate(result2);
             }catch(StatechartException se) {
-        
+            	se.printStackTrace();
+            	System.out.println(se.getMessage());
+            	
             }
           }
 

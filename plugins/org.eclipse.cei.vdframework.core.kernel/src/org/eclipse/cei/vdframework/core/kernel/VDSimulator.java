@@ -8,11 +8,13 @@ import java.util.Vector;
 import java.util.HashMap;
 
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.ConcurrentState;
+import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Context;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.HierarchicalState;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.PseudoState;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Statechart;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.StatechartException;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -32,7 +34,13 @@ public class VDSimulator {
 		 MessageDialog.openError(shell, "[CEI-VD]", 
 				 "Multiple State Machine simulation is not supported yet!");
 		}
+
 		this.ownedSMS = new HashSet<StateMachine>(input_SMS);
+		this.initialKFStates = new HashMap<InitialPseudoState, PseudoState>();
+		this.finalKFStates = new HashMap<FinalState, org.eclipse.cei.vdframework.core.kernel.klangfarbe.FinalState>();
+		this.concurrentKFStates = new HashMap<State, ConcurrentState>();
+		this.hierarchicalKFStates = new HashMap<State, HierarchicalState>();
+		this.stateKFStates = new HashMap<State, org.eclipse.cei.vdframework.core.kernel.klangfarbe.State>();
 		initializeStatechart();
 	}
 	
@@ -63,6 +71,7 @@ public class VDSimulator {
 		EList<Region> regions = sm.getOwnedRegions();
 		Region defaultRegion = regions.get(0);
 		EList<AbstractState> states = defaultRegion.getOwnedStates();
+		DFSParser(defaultRegion);
 	
 	}	
 	
@@ -70,15 +79,18 @@ public class VDSimulator {
 		// Get the list containing root states.
 		EList<AbstractState> rootStates = defaultRegion.getOwnedStates();
 		Stack<State> dfsStack = new Stack<>();
-		Stack<State> parentStack = new Stack<>();
 		HashMap<State, Boolean> mapVisited = new HashMap<State, Boolean>();
 		
-		// Push the first root state that is a <State>		
+		// Push the root states	
 		for(AbstractState absState : rootStates) {
-			if(absState instanceof State) {
+			if((absState instanceof State) && !(absState instanceof FinalState)) {
 				dfsStack.push((State)absState);
-				parentStack.push((State)absState);
-				break;
+				//if(isConcurrent((State) absState)) {
+				//	concurrentKFStates.put((State)absState, new ConcurrentState(absState.getName(), kfChart));
+				//}
+				//else if(isParent((State)absState)) {
+				//	hierarchicalKFStates.put((State) absState, new HierarchicalState(absState.getName(), kfChart));	
+				//}
 			}
 		}
 		
@@ -99,10 +111,9 @@ public class VDSimulator {
 			State s = dfsStack.peek();
 			dfsStack.pop();
 			
-			if(mapVisited.get(s) == false || mapVisited.get(s) == null) {
+			if(mapVisited.get(s) == null || mapVisited.get(s) == false) {
 				// Now we visit this state.
-				
-			
+				Context parent = getParent(s);
 				if(s instanceof InitialPseudoState) {
 					// add the following block to a function
 					
@@ -124,72 +135,37 @@ public class VDSimulator {
 					 }
 					
 					 // Populate hash maps
-					 if(hierarchicalKFStates.get(involvedStates.get(0)) != null) {
-						 initialKFStates.put((InitialPseudoState)s, new PseudoState(
-								 s.getName(), hierarchicalKFStates.get(involvedStates.get(0)), PseudoState.pseudostate_start));
-					 }else if(concurrentKFStates.get(involvedStates.get(0)) != null) {
-						 initialKFStates.put((InitialPseudoState)s, new PseudoState(
-								 s.getName(), concurrentKFStates.get(involvedStates.get(0)), PseudoState.pseudostate_start));
-					 }
-					 else {
-						 // This PseudoInitialPoint doesn't have a parent?
-						 
-					 } 
+					 initialKFStates.put((InitialPseudoState)s, new PseudoState(
+							 s.getName(), parent, PseudoState.pseudostate_start));
+		
 				}
 				else if(s instanceof State) {
-					// Add warnings
-					EList<Region> involvedRegions = s.getInvolverRegions();
-					EList<AbstractState> involvedStates = involvedRegions.get(0).getInvolvedStates();
-					
+					// Add warnings		
 					boolean isConcurrent = s.getOwnedRegions().size() > 1 ? true : false;
-					if(isConcurrent) {
-						if(hierarchicalKFStates.get(involvedStates.get(0)) != null) {
-							 concurrentKFStates.put((State)s, new ConcurrentState(
-									 s.getName(), hierarchicalKFStates.get(involvedStates.get(0))));
-						 }else if(concurrentKFStates.get(involvedStates.get(0)) != null) {
-							 concurrentKFStates.put((State)s, new ConcurrentState(
-									 s.getName(), concurrentKFStates.get(involvedStates.get(0))));
-						 }
-						 else {
-							 // This PseudoInitialPoint doesn't have a parent?
-							 
-						 }
-					}		
-					boolean isHierarchical;
+					boolean isHierarchical = false;
 					for(Region or : s.getOwnedRegions()) {
 						  isHierarchical = or.getOwnedStates().size() > 0 ? true : false;	
 						}
+					if(isConcurrent) {
+						concurrentKFStates.put((State)s, new ConcurrentState(
+								 s.getName(), parent));
+						
+					}else if(isHierarchical) {
+						hierarchicalKFStates.put((State)s, new HierarchicalState(
+								 s.getName(), parent));	
+					}else {
+						// Just an empty state
+					    stateKFStates.put((State)s, new 
+					    		org.eclipse.cei.vdframework.core.kernel.klangfarbe.State(s.getName(), parent));
 					
-					if(isHierarchical) {
-						
-						
-						
-						
-						
 					}
-					
-					
-					
-					
-					
-						
-					
-					
-					// Populate hash maps
-					 if(hierarchicalKFStates.get(involvedStates.get(0)) != null) {
-						 initialKFStates.put((InitialPseudoState)s, new PseudoState(
-								 s.getName(), hierarchicalKFStates.get(involvedStates.get(0)), PseudoState.pseudostate_start));
-					 }else if(concurrentKFStates.get(involvedStates.get(0)) != null) {
-						 initialKFStates.put((InitialPseudoState)s, new PseudoState(
-								 s.getName(), concurrentKFStates.get(involvedStates.get(0)), PseudoState.pseudostate_start));
-					 }
-					 else {
-						 // This PseudoInitialPoint doesn't have a parent?
-						 
-					 } 
-					
 				}
-			
+				else if (s instanceof FinalState) {
+					 // Populate hash maps		
+					finalKFStates.put((FinalState)s, new org.eclipse.cei.vdframework.core.kernel.klangfarbe.FinalState(
+							 s.getName(), parent));
+					 		
+				}
 				
 				mapVisited.put(s,  true);
 			    
@@ -209,7 +185,7 @@ public class VDSimulator {
 		    	
 		    	for(AbstractState absState : subStates) {
 		    		if(absState instanceof State && 
-		    				(mapVisited.get(absState) == false || mapVisited.get(absState) == null)) {
+		    				(mapVisited.get(absState) == null || mapVisited.get(absState) == false)) {
 		    				dfsStack.push((State)absState);
 		    			}
 		    		}
@@ -219,17 +195,65 @@ public class VDSimulator {
 		    	
 		    	
 		    }
-			
+			kfChart.toString();
 			
 		}
 		
 		
 		
 		
+	private Context getParent(State s) {
+		EList<Region> involverRegions = s.getInvolverRegions();
+		EObject involverState = involverRegions.get(0).eContainer();
+		Context ret = null;
 		
+		if(involverRegions.size() > 1) {
+			 Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+			 MessageDialog.openError(shell, "[CEI-VD]", 
+					 "InitialPseudoState is included in two regions.");
+			 
+			 return ret;
+		 }
+		String name = involverRegions.get(0).getName();
+		if(name.equals("Default Region")) {
+			ret = kfChart;
+		}
+		else if(!(involverState instanceof State)) {
+			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+			 MessageDialog.openError(shell, "[CEI-VD]", 
+					 "eContainer is not a State");
+			return null;
+		}
+		 
+		 // Populate hash maps
+		 if(hierarchicalKFStates.get(involverState) != null) {
+			 ret = hierarchicalKFStates.get(involverState);
+		 }else if(concurrentKFStates.get(involverState) != null) {
+			 ret =  concurrentKFStates.get(involverState);
+		 }
+		 else {
+			 // This PseudoInitialPoint doesn't have a parent? 
+			
+		 } 
+		 return ret;
+	}
 	
+	private boolean isParent(State s) {
+		EList<Region> ownedRegions = s.getOwnedRegions();
+		boolean isParent = false;
+		for(Region r : ownedRegions) {
+			if(r.getOwnedStates().size() > 0) {
+				isParent= true;
+				break;
+			}
+		}
+		return isParent;
+	}
 	
-	
+	private boolean isConcurrent(State s) {
+		EList<Region> ownedRegions = s.getOwnedRegions();
+		return ownedRegions.size() > 1 ? true : false;
+	}
 	
 	
 	
@@ -243,7 +267,7 @@ public class VDSimulator {
 	private HashMap<FinalState, org.eclipse.cei.vdframework.core.kernel.klangfarbe.FinalState> finalKFStates;
 	private HashMap<State, HierarchicalState> hierarchicalKFStates;
 	private HashMap<State, ConcurrentState> concurrentKFStates;
-	
+	private HashMap<State, org.eclipse.cei.vdframework.core.kernel.klangfarbe.State> stateKFStates;
 	
 	// Singleton
 	private static VDSimulator INSTANCE;
