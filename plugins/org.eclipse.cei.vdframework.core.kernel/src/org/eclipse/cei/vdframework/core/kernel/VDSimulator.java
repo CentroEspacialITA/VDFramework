@@ -192,60 +192,79 @@ public class VDSimulator {
 		initialKFStates.forEach(
 				(key,value) ->
 				{
-				 EList<StateTransition> outTransition = key.getOutgoing();	
-				 if(outTransition.size() > 1) {
-					 Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-					 MessageDialog.openError(shell, "[CEI-VD]", 
-							 "Initial Pseudo State contains more than one outgoing transitions.");
-					 return;
-				 }
-				 // Next AbstractState could be:
-				 // State, HierarchicalState, ConcurrentState, FinalState.
-				 if(outTransition.size()>0) {
-				 AbstractState target = outTransition.get(0).getTarget();
-				 Context targetKF = null;
-				 if(isConcurrent(target)) {
-					 targetKF = concurrentKFStates.get(target);
-					 
-				 }else if (isHierarchical(target)) {
-					 targetKF = hierarchicalKFStates.get(target);
-					 
-				 }else {
-					 transitionKF.put(outTransition.get(0), new Transition(value, stateKFStates.get(target)));
-					 
-				 }
-				 if(targetKF != null) {
-				 transitionKF.put(outTransition.get(0), new Transition(value, targetKF));
-				 }
-				 }
-				});			
+				 addLeavingTransition(key, value);
+				});
+		// Add all transitions entering a final node
 		finalKFStates.forEach(
-				// Add all transitions entering a final node
 				(key,value) ->
 				{
-				 EList<StateTransition> inTransition = key.getIncoming();	
-				 for(StateTransition in : inTransition) {
-				 AbstractState source = in.getSource();
-				 Context sourceKF = null;
-				 if(isConcurrent(source)) {
-					 sourceKF = concurrentKFStates.get(source);
-					 
-				 }else if (isHierarchical(source)) {
-					 sourceKF = hierarchicalKFStates.get(source);
-					 
-				 }else {
-					 transitionKF.put(in, new Transition(stateKFStates.get(source), value));
-					 
-				 }
-				 if(sourceKF != null) {
-				 transitionKF.put(inTransition.get(0), new Transition(sourceKF,value));
-				 }
-				 }
+				 addEnteringTransition(key,value);
 				});	
-		
+		// Add all transitions leaving a concurrent state. 
+		concurrentKFStates.forEach(
+				(key,value) ->
+				{
+				 addLeavingTransition(key, value);
+				});
+		// Add all transitions leaving an hierarchical state
+		hierarchicalKFStates.forEach(
+				(key,value) ->
+				{
+				 addLeavingTransition(key, value);
+				});	
+		// Add all transitions leaving a state
+		stateKFStates.forEach(
+				(key,value) ->
+				{
+				 addLeavingTransition(key, value);
+				});
+	}
+	
+	private void addLeavingTransition(AbstractState key, org.eclipse.cei.vdframework.core.kernel.klangfarbe.State value) {
+		EList<StateTransition> outTransition = key.getOutgoing();	
+		 // Next AbstractState could be:
+		 // State, HierarchicalState, ConcurrentState, FinalState.
+		 for(StateTransition out: outTransition) {
+		 AbstractState target = out.getTarget();
+		 Context targetKF = null;
+		 if(isConcurrent(target)) {
+			 targetKF = concurrentKFStates.get(target);
+			 
+		 }else if (isHierarchical(target)) {
+			 targetKF = hierarchicalKFStates.get(target);
+			 
+		 }else {
+			 transitionKF.put(out, new Transition(value, stateKFStates.get(target)));
+			 
+		 }
+		 if(targetKF != null) {
+		 transitionKF.put(out, new Transition(value, targetKF));
+		 }
+		 }
+	}
+	
+	private void addEnteringTransition(AbstractState key, org.eclipse.cei.vdframework.core.kernel.klangfarbe.State value) {
+		EList<StateTransition> inTransition = key.getIncoming();	
+		 for(StateTransition in : inTransition) {
+		 AbstractState source = in.getSource();
+		 Context sourceKF = null;
+		 if(isConcurrent(source)) {
+			 sourceKF = concurrentKFStates.get(source);
+			 
+		 }else if (isHierarchical(source)) {
+			 sourceKF = hierarchicalKFStates.get(source);
+			 
+		 }else {
+			 transitionKF.put(in, new Transition(stateKFStates.get(source), value));
+			 
+		 }
+		 if(sourceKF != null) {
+		 transitionKF.put(inTransition.get(0), new Transition(sourceKF,value));
+		 }
+		 }
 		
 	}
-		
+	
 		
 	private Context getParent(AbstractState s) {
 		EList<Region> involverRegions = s.getInvolverRegions();
@@ -278,7 +297,7 @@ public class VDSimulator {
 			if(isInsideConcurrentZone) {
 				return regionKFState.get(involverRegions.get(0));
 			}else {
-				return (Context)involverState;
+				return hierarchicalKFStates.get((State)involverState);		
 			}
 			
 		}
