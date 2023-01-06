@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.ConcurrentState;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Context;
+import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Event;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.HierarchicalState;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.PseudoState;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Statechart;
@@ -20,6 +21,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+import org.polarsys.capella.common.data.behavior.AbstractEvent;
 import org.polarsys.capella.core.data.capellacommon.AbstractState;
 import org.polarsys.capella.core.data.capellacommon.FinalState;
 import org.polarsys.capella.core.data.capellacommon.InitialPseudoState;
@@ -46,6 +48,8 @@ public class VDSimulator {
 		this.stateKFStates = new HashMap<State, org.eclipse.cei.vdframework.core.kernel.klangfarbe.State>();
 		this.regionKFState = new HashMap<Region, HierarchicalState>();
 		this.transitionKF = new HashMap<StateTransition, Transition>();
+		this.mapKFEvent = new HashMap<AbstractEvent, KlangfarbeEvent>();
+		this.mapKFAction = new HashMap<AbstractEvent, KlangfarbeAction>();
 		initializeStatechart();
 	}
 	
@@ -235,6 +239,15 @@ public class VDSimulator {
 			 
 		 }else {
 			 transitionKF.put(out, new Transition(value, stateKFStates.get(target)));
+			 EList<AbstractEvent> capellaEvent = out.getTriggers();
+			 for(AbstractEvent event : capellaEvent) {
+				 mapKFEvent.put(event,new KlangfarbeEvent(event.getName())); 
+			 }
+			 EList<AbstractEvent> capellaAction = out.getEffect();
+			 for(AbstractEvent action : capellaAction) {
+				 mapKFAction.put(action, new KlangfarbeAction(action.getName()));
+			 }
+			 
 			 
 		 }
 		 if(targetKF != null) {
@@ -256,6 +269,8 @@ public class VDSimulator {
 			 
 		 }else {
 			 transitionKF.put(in, new Transition(stateKFStates.get(source), value));
+			 
+			 
 			 
 		 }
 		 if(sourceKF != null) {
@@ -358,6 +373,10 @@ public class VDSimulator {
 	private HashMap<State, org.eclipse.cei.vdframework.core.kernel.klangfarbe.State> stateKFStates;
 	private HashMap<Region, HierarchicalState> regionKFState;
 	private HashMap<StateTransition, Transition> transitionKF;
+	private HashMap<AbstractEvent, KlangfarbeEvent> mapKFEvent;
+	private HashMap<AbstractEvent, KlangfarbeAction> mapKFAction;
+	
+	
 	// Singleton
 	private static VDSimulator INSTANCE;
 	// Klangfarbe Statechart
