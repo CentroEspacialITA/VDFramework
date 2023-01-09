@@ -1,10 +1,15 @@
 package org.eclipse.cei.vdframework.core.kernel;
 
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Event;
+import org.polarsys.capella.common.data.behavior.AbstractEvent;
 
 public class KlangfarbeEvent extends Event {
-	public KlangfarbeEvent(String name) {
-		super(name);
+	
+	private AbstractEvent myCapellaEvent = null;
+	
+	public KlangfarbeEvent(AbstractEvent capellaEvent) {
+		super(capellaEvent.getName());
+		this.myCapellaEvent = capellaEvent;
 	}
 	
 }

@@ -11,6 +11,7 @@ import org.eclipse.cei.vdframework.core.kernel.klangfarbe.ConcurrentState;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Context;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Event;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.HierarchicalState;
+import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Metadata;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.PseudoState;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.Statechart;
 import org.eclipse.cei.vdframework.core.kernel.klangfarbe.StatechartException;
@@ -65,6 +66,10 @@ public class VDSimulator {
 		return INSTANCE != null ? INSTANCE : null;
 	}
 	
+	public void startAsynch() {
+		Metadata data = new Metadata();
+		kfChart.startAsynchron(data);
+	}
 	
 	private void initializeStatechart() throws StatechartException {
 		if(ownedSMS.size() == 0) {
@@ -155,6 +160,7 @@ public class VDSimulator {
 					    		org.eclipse.cei.vdframework.core.kernel.klangfarbe.State(s.getName(), parent));
 					
 					}
+					addEntryDoExit((State)s);
 					
 					EList<Region> sRegions = ((State)s).getOwnedRegions();
 				    for(Region r : sRegions) {
@@ -241,11 +247,11 @@ public class VDSimulator {
 			 transitionKF.put(out, new Transition(value, stateKFStates.get(target)));
 			 EList<AbstractEvent> capellaEvent = out.getTriggers();
 			 for(AbstractEvent event : capellaEvent) {
-				 mapKFEvent.put(event,new KlangfarbeEvent(event.getName())); 
+				 mapKFEvent.put(event,new KlangfarbeEvent(event.getName(), event)); 
 			 }
 			 EList<AbstractEvent> capellaAction = out.getEffect();
 			 for(AbstractEvent action : capellaAction) {
-				 mapKFAction.put(action, new KlangfarbeAction(action.getName()));
+				 mapKFAction.put(action, new KlangfarbeAction(action.getName(), action, kfChart));
 			 }
 			 
 			 
@@ -328,6 +334,27 @@ public class VDSimulator {
 			 // A normal State can't be a parent.
 		 } 
 		 return ret;
+	}
+	
+	private void addEntryDoExit(State s) {
+		EList<AbstractEvent> entryActivities = s.getEntry();
+		EList<AbstractEvent> doActivities = s.getDoActivity();
+		EList<AbstractEvent> exitActivities = s.getExit();
+		for(AbstractEvent entryActivity : entryActivities) {
+			KlangfarbeAction kfAction =  new KlangfarbeAction(entryActivity.getName(), entryActivity, kfChart);
+			kfAction.setTrigger(new KlangfarbeEvent(entryActivity.getName(), entryActivity));
+			mapKFAction.put(entryActivity, new KlangfarbeAction(entryActivity.getName(), entryActivity, kfChart));
+		
+		}
+		for(AbstractEvent doActivity : doActivities) {
+			mapKFAction.put(doActivity, new KlangfarbeAction(doActivity.getName(), doActivity, kfChart));
+		}
+		for(AbstractEvent exitActivity : exitActivities) {
+			mapKFAction.put(exitActivity, new KlangfarbeAction(exitActivity.getName(), exitActivity, kfChart));
+		}
+		
+		
+		
 	}
 	
 	private boolean isParent(AbstractState s) {

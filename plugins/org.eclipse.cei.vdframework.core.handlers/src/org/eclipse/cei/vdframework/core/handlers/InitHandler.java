@@ -89,6 +89,8 @@ public class InitHandler extends AbstractHandler {
             	System.out.println(se.getMessage());
             	
             }
+            VDSimulator.getInstance().startAsynch();
+            
           }
 
           
